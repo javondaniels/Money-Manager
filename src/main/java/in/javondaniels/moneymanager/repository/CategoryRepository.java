@@ -9,13 +9,13 @@ import java.util.Optional;
 public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> {
 
     //select * from tbl_categories where profile_id = ?1
-    List<CategoryEntity> findByProfileId(Long profileId);
+    List<CategoryEntity> findByProfile_Id(Long profileId);
 
     //select * from tbl_categories where id = ?1 and profile_Id = ?2
-    Optional<CategoryEntity> findByIdAndProfileId(Long id, Long profileId);
+    Optional<CategoryEntity> findByIdAndProfile_Id(Long id, Long profileId);
 
     //select * from tbl_categories where type = ?1 and profile_Id = ?2
-    List<CategoryEntity> findByTypeAndProfileId(String type, Long profileId);
+    List<CategoryEntity> findByTypeAndProfile_Id(String type, Long profileId);
 
-    Boolean existsByNameAndProfileId(String name, Long profileId);
+    Boolean existsByNameAndProfile_Id(String name, Long profileId);
 }

@@ -1,12 +1,10 @@
 package in.javondaniels.moneymanager.service;
 
-
-import in.javondaniels.moneymanager.entity.ProfileEntity;
 import in.javondaniels.moneymanager.dto.CategoryDTO;
 import in.javondaniels.moneymanager.entity.CategoryEntity;
+import in.javondaniels.moneymanager.entity.ProfileEntity;
 import in.javondaniels.moneymanager.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -21,9 +19,10 @@ public class CategoryService {
     private final ProfileService profileService;
     private final CategoryRepository categoryRepository;
 
+    //save category
     public CategoryDTO saveCategory(CategoryDTO categoryDTO) {
         ProfileEntity profile = profileService.getCurrentProfile();
-        if (categoryRepository.existsByNameAndProfileId(categoryDTO.getName(), profile.getId())) {
+        if (categoryRepository.existsByNameAndProfile_Id(categoryDTO.getName(), profile.getId())) {
             throw new RuntimeException("Category with this name already exists");
         }
 
@@ -32,12 +31,28 @@ public class CategoryService {
         return toDTO(newCategory);
     }
 
-
     //get categories for current user
     public List<CategoryDTO> getCategoriesForCurrentUser() {
         ProfileEntity profile = profileService.getCurrentProfile();
-        List<CategoryEntity> categories = categoryRepository.findByProfileId(profile.getId());
+        List<CategoryEntity> categories = categoryRepository.findByProfile_Id(profile.getId());
         return categories.stream().map(this::toDTO).toList();
+    }
+
+    //get categories by type for current user
+    public List<CategoryDTO> getCategoriesByTypeForCurrentUser(String type) {
+        ProfileEntity profile = profileService.getCurrentProfile();
+        List<CategoryEntity> entities = categoryRepository.findByTypeAndProfile_Id(type, profile.getId());
+        return entities.stream().map(this::toDTO).toList();
+    }
+
+    public CategoryDTO updateCategory(Long categoryId, CategoryDTO dto) {
+        ProfileEntity profile = profileService.getCurrentProfile();
+        CategoryEntity existingCategory = categoryRepository.findByIdAndProfile_Id(categoryId, profile.getId())
+                .orElseThrow(() -> new RuntimeException("Category not found or not accessible"));
+        existingCategory.setName(dto.getName());
+        existingCategory.setIcon(dto.getIcon());
+        existingCategory = categoryRepository.save(existingCategory);
+        return toDTO(existingCategory);
     }
 
     //helper methods
@@ -53,12 +68,14 @@ public class CategoryService {
     private CategoryDTO toDTO(CategoryEntity entity) {
         return CategoryDTO.builder()
                 .id(entity.getId())
-                .profileId(entity.getProfile() !=null ? entity.getProfile().getId(): null)
+                .profileId(entity.getProfile() != null ?  entity.getProfile().getId(): null)
                 .name(entity.getName())
                 .icon(entity.getIcon())
-                .type(entity.getType())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
+                .type(entity.getType())
                 .build();
+
     }
 }
+
